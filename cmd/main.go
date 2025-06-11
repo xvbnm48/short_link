@@ -43,7 +43,7 @@ func main() {
 	})
 	app.Post("/shorten", repoUsecase.CreateShortLink)
 	app.Get("/shorten/:id", repoUsecase.GetShortLink)
-	// app.Get("/shorten/:id", repoUsecase.)
+	app.Get("/:shortCode", repoUsecase.GetOriginalURL)
 
 	log.Info("Starting server on :3000")
 	app.Get("/hello", HelloHandler)

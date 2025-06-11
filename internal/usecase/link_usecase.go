@@ -11,10 +11,24 @@ import (
 type LinkUseCase interface {
 	CreateShortLink(ctx *fiber.Ctx) error
 	GetShortLink(ctx *fiber.Ctx) error
+	GetOriginalURL(ctx *fiber.Ctx) error
 }
 
 type linkUseCase struct {
 	service service.LinkService
+}
+
+// GetOriginalURL implements LinkUseCase.
+func (l *linkUseCase) GetOriginalURL(ctx *fiber.Ctx) error {
+	shortCode := ctx.Params("shortCode")
+	originalURL, err := l.service.GetOriginalURL(shortCode)
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "Original URL not found",
+			"error":   err.Error(),
+		})
+	}
+	return ctx.Redirect(originalURL, fiber.StatusFound)
 }
 
 // GetShortLink implements LinkUseCase.

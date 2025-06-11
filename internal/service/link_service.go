@@ -10,10 +10,20 @@ import (
 type LinkService interface {
 	CreateShortLink(linkRequest model.LinkCreateRequest) (model.LinkCreateResponse, error)
 	GetShortLink(id int) (model.Link, error)
+	GetOriginalURL(shortCode string) (string, error)
 }
 
 type linkService struct {
 	repo repository.LinkRepository
+}
+
+// GetOriginalURL implements LinkService.
+func (l *linkService) GetOriginalURL(shortCode string) (string, error) {
+	originalURL, err := l.repo.GetOriginalURL(shortCode)
+	if err != nil {
+		return "", err
+	}
+	return originalURL, nil
 }
 
 // CreateShortLink implements LinkService.

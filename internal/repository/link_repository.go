@@ -12,10 +12,26 @@ import (
 type LinkRepository interface {
 	CreateShortLink(linkRequest model.LinkCreateRequest) (model.Link, error)
 	GetShortLink(id int) (model.Link, error)
+	GetOriginalURL(shortCode string) (string, error)
 }
 
 type linkRepository struct {
 	db *sql.DB
+}
+
+// GetOriginalURL implements LinkRepository.
+func (l *linkRepository) GetOriginalURL(shortCode string) (string, error) {
+	log.Info("Executing Func GetOriginalURL with param: ", shortCode)
+	query := `SELECT original_url FROM links WHERE short_code = $1`
+	fmt.Println("Query:", query)
+	var originalURL string
+	err := l.db.QueryRow(query, shortCode).Scan(&originalURL)
+	if err != nil {
+		log.Error("Failed to get original URL:", err)
+		return "", err
+	}
+	log.Info("Original URL retrieved successfully: ", originalURL)
+	return originalURL, nil
 }
 
 // GetShortLink implements LinkRepository.
