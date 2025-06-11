@@ -5,10 +5,11 @@ import (
 	"api-service/internal/repository"
 	"api-service/internal/service"
 	"api-service/internal/usecase"
-	"fmt"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/joho/godotenv"
 )
 
 func HealthHandler(c *fiber.Ctx) error {
@@ -24,7 +25,11 @@ func HelloHandler(c *fiber.Ctx) error {
 }
 
 func main() {
-	fmt.Println("hello world!")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	port := os.Getenv("PORT")
 	app := fiber.New()
 
 	// to database connection
@@ -48,5 +53,10 @@ func main() {
 	log.Info("Starting server on :3000")
 	app.Get("/hello", HelloHandler)
 	app.Get("/health", HealthHandler)
-	app.Listen(":3000")
+	if err != app.Listen(":"+port) {
+		log.Error("Failed to start server:", err)
+		return
+	}
+	log.Info("Server is running on port:", port)
+	log.Info("Server started successfully")
 }
