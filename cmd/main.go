@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	port := os.Getenv("PORT")
+	port := os.Getenv("PORT_SERVER")
 	app := fiber.New()
 
 	// to database connection
@@ -43,12 +43,15 @@ func main() {
 	repoLink := repository.NewLinkRepository(db)
 	repoService := service.NewLinkService(repoLink)
 	repoUsecase := usecase.NewLinkUseCase(repoService)
+	api := app.Group("/api/v1")
+	// Define routes
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, Fiber!")
 	})
-	app.Post("/shorten", repoUsecase.CreateShortLink)
-	app.Get("/shorten/:id", repoUsecase.GetShortLink)
-	app.Get("/:shortCode", repoUsecase.GetOriginalURL)
+	api.Post("/shorten", repoUsecase.CreateShortLink)
+	api.Get("/shorten/:id", repoUsecase.GetShortLink)
+	api.Get("/:shortCode", repoUsecase.GetOriginalURL)
 
 	log.Info("Starting server on :3000")
 	app.Get("/hello", HelloHandler)

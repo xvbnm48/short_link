@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 type LinkUseCase interface {
@@ -23,9 +24,9 @@ func (l *linkUseCase) GetOriginalURL(ctx *fiber.Ctx) error {
 	shortCode := ctx.Params("shortCode")
 	originalURL, err := l.service.GetOriginalURL(shortCode)
 	if err != nil {
+		log.Error("Error retrieving original URL:", err)
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": "Original URL not found",
-			"error":   err.Error(),
 		})
 	}
 	return ctx.Redirect(originalURL, fiber.StatusFound)
@@ -39,8 +40,8 @@ func (l *linkUseCase) GetShortLink(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": "Link not found",
-			"error":   err.Error(),
 		})
+		log.Error("Error retrieving link:", err)
 	}
 	return ctx.JSON(fiber.Map{
 		"message": "Link retrieved successfully",
@@ -56,16 +57,16 @@ func (l *linkUseCase) CreateShortLink(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&LinkReq); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid request body",
-			"error":   err.Error(),
 		})
+		log.Error("Error parsing request body:", err)
 	}
 
 	id, err := l.service.CreateShortLink(LinkReq)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create short link",
-			"error":   err.Error(),
 		})
+		log.Error("Error creating short link:", err)
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Short link created successfully",
