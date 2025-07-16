@@ -3,6 +3,7 @@ package usecase
 import (
 	"api-service/internal/model"
 	"api-service/internal/service"
+	"fmt"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,10 +14,30 @@ type LinkUseCase interface {
 	CreateShortLink(ctx *fiber.Ctx) error
 	GetShortLink(ctx *fiber.Ctx) error
 	GetOriginalURL(ctx *fiber.Ctx) error
+	GetAllLink(ctx *fiber.Ctx) error
 }
 
 type linkUseCase struct {
 	service service.LinkService
+}
+
+// GetAllLink implements LinkUseCase.
+func (l *linkUseCase) GetAllLink(ctx *fiber.Ctx) error {
+	fmt.Println("usecase GetAllLink")
+	links, err := l.service.GetAllLink()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve links",
+			"error":   err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"message": "Links retrieved successfully",
+		"data":    links,
+		"status":  fiber.StatusOK,
+		"code":    200,
+	})
 }
 
 // GetOriginalURL implements LinkUseCase.
@@ -61,7 +82,7 @@ func (l *linkUseCase) CreateShortLink(ctx *fiber.Ctx) error {
 		log.Error("Error parsing request body:", err)
 	}
 
-	id, err := l.service.CreateShortLink(LinkReq)
+	response, err := l.service.CreateShortLink(LinkReq)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create short link",
@@ -70,7 +91,7 @@ func (l *linkUseCase) CreateShortLink(ctx *fiber.Ctx) error {
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Short link created successfully",
-		"data":    id,
+		"data":    response.Data,
 		"status":  fiber.StatusCreated,
 		"code":    201,
 	})

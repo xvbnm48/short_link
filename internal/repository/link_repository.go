@@ -13,10 +13,36 @@ type LinkRepository interface {
 	CreateShortLink(linkRequest model.LinkCreateRequest) (model.Link, error)
 	GetShortLink(id int) (model.Link, error)
 	GetOriginalURL(shortCode string) (string, error)
+	GetAllLink() ([]model.Link, error)
 }
 
 type linkRepository struct {
 	db *sql.DB
+}
+
+// GetAllLink implements LinkRepository.
+func (l *linkRepository) GetAllLink() ([]model.Link, error) {
+	log.Info("Executing Func GetAllLink")
+	query := `SELECT id, short_code, original_url, created_at, updated_at FROM links`
+	fmt.Println("Query:", query)
+	rows, err := l.db.Query(query)
+	if err != nil {
+		log.Error("Failed to get all links:", err)
+		return nil, err
+	}
+	fmt.Println("Rows:", rows)
+	defer rows.Close()
+	var links []model.Link
+	for rows.Next() {
+		var link model.Link
+		if err := rows.Scan(&link.ID, &link.ShortCode, &link.OriginalURL, &link.CreatedAt, &link.UpdatedAt); err != nil {
+			log.Error("Failed to scan row:", err)
+			return nil, err
+		}
+		link.NewLink = fmt.Sprintf("localhost:3000/%s", link.ShortCode) // Assuming NewLink is derived from ShortCode
+		links = append(links, link)
+	}
+	return links, nil
 }
 
 // GetOriginalURL implements LinkRepository.

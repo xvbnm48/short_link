@@ -49,11 +49,15 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, Fiber!")
 	})
-	api.Post("/shorten", repoUsecase.CreateShortLink)
-	api.Get("/shorten/:id", repoUsecase.GetShortLink)
-	api.Get("/:shortCode", repoUsecase.GetOriginalURL)
 
-	log.Info("Starting server on :3000")
+	v1 := app.Group("/v1")
+	v1.Post("/shorten", repoUsecase.CreateShortLink)
+	v1.Get("/shorten/links", repoUsecase.GetAllLink)
+	v1.Get("/shorten/:id", repoUsecase.GetShortLink)
+	v1.Get("/:shortCode", repoUsecase.GetOriginalURL)
+
+
+	log.Info("Starting server on :", port)
 	app.Get("/hello", HelloHandler)
 	app.Get("/health", HealthHandler)
 	if err != app.Listen(":"+port) {
