@@ -43,14 +43,19 @@ func main() {
 	repoLink := repository.NewLinkRepository(db)
 	repoService := service.NewLinkService(repoLink)
 	repoUsecase := usecase.NewLinkUseCase(repoService)
+	api := app.Group("/api/v1")
+	// Define routes
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, Fiber!")
 	})
+
 	v1 := app.Group("/v1")
 	v1.Post("/shorten", repoUsecase.CreateShortLink)
 	v1.Get("/shorten/links", repoUsecase.GetAllLink)
 	v1.Get("/shorten/:id", repoUsecase.GetShortLink)
 	v1.Get("/:shortCode", repoUsecase.GetOriginalURL)
+
 
 	log.Info("Starting server on :", port)
 	app.Get("/hello", HelloHandler)
