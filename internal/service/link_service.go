@@ -4,6 +4,7 @@ import (
 	"api-service/internal/model"
 	"api-service/internal/repository"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 )
 
@@ -11,10 +12,21 @@ type LinkService interface {
 	CreateShortLink(linkRequest model.LinkCreateRequest) (model.LinkCreateResponse, error)
 	GetShortLink(id int) (model.Link, error)
 	GetOriginalURL(shortCode string) (string, error)
+	GetAllLink() ([]model.Link, error)
 }
 
 type linkService struct {
 	repo repository.LinkRepository
+}
+
+// GetAllLink implements LinkService.
+func (l *linkService) GetAllLink() ([]model.Link, error) {
+	fmt.Println("Executing Func GetAllLink")
+	links, err := l.repo.GetAllLink()
+	if err != nil {
+		return nil, err
+	}
+	return links, nil
 }
 
 // GetOriginalURL implements LinkService.
@@ -32,7 +44,7 @@ func (l *linkService) CreateShortLink(linkRequest model.LinkCreateRequest) (mode
 	if err != nil {
 		return model.LinkCreateResponse{}, err
 	}
-	baseCode := "localhost:3000/" + codeRand.String()
+	baseCode := "localhost:3000/v1/" + codeRand.String()
 	linkRequest.ShortCode = baseCode
 
 	createdLink, err := l.repo.CreateShortLink(linkRequest)
